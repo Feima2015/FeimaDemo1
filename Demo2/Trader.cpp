@@ -71,7 +71,7 @@ private:
 
 };
 
-int main()
+void main()
 {
 	CUstpFtdcTraderApi *pTrader = CUstpFtdcTraderApi::CreateFtdcTraderApi("");
 	CSimpleHandler spi(pTrader);
@@ -84,5 +84,4 @@ int main()
 	pTrader->Join();
 	//pTrader->Release();
 	getchar();
-	return 0;
 }
