@@ -14,6 +14,10 @@ TUstpFtdcBrokerIDType g_BrokerID;
 //定义交易者ID
 TUstpFtdcUserIDType g_UserID;
 
+//报单录入操作是否完成的标志
+//Create a manual reset event with no signal
+HANDLE g_hEvent = CreateEvent(NULL, true, false, NULL);
+
 class CSimpleHandler :public CUstpFtdcTraderSpi
 {
 public:
@@ -66,9 +70,39 @@ public:
 	//用户最大本地报单号
 
 
+	//报单录入应答
+	virtual void OnRspOrderInsert(CUstpFtdcRspUserLoginField *pInputOrder, CUstpFtdcRspInfoField *pRspInfo, int nRequestId, bool bIsLast)
+	{
+		//输出录入结果
+		cout << "ErrorCode=" << pRspInfo->ErrorID << ", ErrorMsg="<<pRspInfo->ErrorMsg<<endl;
+		//通知报单录入完成
+		SetEvent(g_hEvent);
+	}
+
+	//报单回报
+	virtual void OnRtnOrder(CUstpFtdcOrderField *pOrder)
+	{
+		cout << "OnRtnOrder:" << endl;
+		cout << "OrderSysID=" << pOrder->OrderSysID << endl;
+	}
+
+	//针对用户请求的出错通知
+	virtual void OnRspError(CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+	{
+		cout << "OnRspError:" << endl;
+		cout << "ErrorCode=" << pRspInfo->ErrorID << ", ErrorMsg=" << pRspInfo->ErrorMsg << endl;
+		cout << "RequestID=" << nRequestID << ", Chain=" << bIsLast << endl;
+		//客户端需要进行错误处理
+		{
+			//客户端的错误处理
+		}
+	}
+
 private:
 	CUstpFtdcTraderApi *m_pUserID;
 
+	//指向CUstpFtdcMduserApi实例的指针
+	CUstpFtdcTraderApi *m_pUserApi;
 };
 
 void main()
